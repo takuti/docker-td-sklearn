@@ -1,10 +1,11 @@
 import os
 import sys
 import json
+import pickle
+import boto3
 import tdclient
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.externals import joblib
 
 
 def load_data(apikey, db_name, query):
@@ -41,13 +42,11 @@ def main():
     rf = RandomForestRegressor(n_estimators=n_estimators)
     rf.fit(X, y)
 
-    dirpath = os.path.join('models', job_id)
-    if not os.path.exists(dirpath):
-        os.makedirs(dirpath)
-
-    # TODO: store the model to S3
-    filepath = os.path.join(dirpath, job_id + '.pkl')
-    joblib.dump(rf, filepath)
+    # boto3 internally checks "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
+    # http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables
+    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE_NAME'])
+    s3 = boto3.resource('s3')
+    s3.Object(os.environ['AWS_BUCKET_NAME'], job_id + '.pkl').put(Body=pickle.dumps(rf))
 
     print(job_id)
 
