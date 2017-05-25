@@ -49,6 +49,8 @@ def main():
     filepath = os.path.join(dirpath, job_id + '.pkl')
     joblib.dump(rf, filepath)
 
+    print(job_id)
+
 
 if __name__ == '__main__':
     main()
