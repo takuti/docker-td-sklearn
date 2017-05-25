@@ -31,9 +31,9 @@ def main():
 
     # boto3 internally checks "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
     # http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables
-    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE_NAME'])
+    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE'])
     s3 = boto3.resource('s3')
-    s3.Object(os.environ['AWS_BUCKET_NAME'], job_id + '.pkl').put(Body=pickle.dumps(rf))
+    s3.Object(os.environ['AWS_BUCKET'], job_id + '.pkl').put(Body=pickle.dumps(rf))
 
     print(job_id)
 

@@ -27,10 +27,10 @@ def main():
 
     # boto3 internally checks "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
     # http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables
-    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE_NAME'])
+    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE'])
     s3 = boto3.resource('s3')
     with open(model_filename, 'w+b') as f:
-        s3.Bucket(os.environ['AWS_BUCKET_NAME']).download_fileobj(model_filename, f)
+        s3.Bucket(os.environ['AWS_BUCKET']).download_fileobj(model_filename, f)
         rf = joblib.load(f)
     os.remove(model_filename)
 
