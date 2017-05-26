@@ -22,9 +22,9 @@ $ docker run \
 -e AWS_PROFILE=${AWS_PROFILE} \
 -e AWS_BUCKET=${AWS_BUCKET} \
 -it sklearn src/train.py \
---apikey $TD_API_KEY --db sample_datasets --table nasdaq \
--f open -f volume -f low -f high \
---target close \
+--apikey $TD_API_KEY --db takuti --table news20_binary \
+-f features \
+--target label \
 --limit 100 \
 --n_estimators 16
 ```
@@ -38,8 +38,8 @@ $ docker run  \
 -e AWS_PROFILE=${AWS_PROFILE} \
 -e AWS_BUCKET=${AWS_BUCKET} \
 -it sklearn src/predict.py \
---apikey $TD_API_KEY --db sample_datasets --table nasdaq \
--f open -f volume -f low -f high \
+--apikey $TD_API_KEY --db takuti --table news20_binary \
+-f features \
 --limit 100 \
---model 145080752
+--model 145250382
 ```

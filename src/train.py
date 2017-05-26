@@ -2,10 +2,9 @@ import os
 import pickle
 import boto3
 import click
-import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
-from common import load_data
+from common import load_data, load_data_livsvm
 
 
 @click.command()
@@ -20,9 +19,10 @@ def main(apikey, db, table, feature, target, limit, n_estimators):
     cols = ', '.join(feature) + ', ' + target
     query = 'select %s from %s limit %d' % (cols, table, limit)
 
-    job_id, res = load_data(apikey, db, query)
-    mat = np.asarray(res)
-    X, y = mat[:, :-1], mat[:, -1]
+    if len(feature) == 1:  # livsvm
+        job_id, X, y = load_data_livsvm(apikey, db, query)
+    else:
+        job_id, X, y = load_data(apikey, db, query)
 
     rf = RandomForestRegressor(n_estimators=n_estimators)
     rf.fit(X, y)

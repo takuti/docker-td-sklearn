@@ -1,10 +1,9 @@
 import os
 import boto3
 import click
-import numpy as np
 from sklearn.externals import joblib
 
-from common import load_data
+from common import load_data, load_data_livsvm
 
 
 @click.command()
@@ -18,8 +17,10 @@ def main(apikey, db, table, feature, limit, model):
     cols = ', '.join(feature)
     query = 'select %s from %s limit %d' % (cols, table, limit)
 
-    _, res = load_data(apikey, db, query)
-    X = np.asarray(res)
+    if len(feature) == 1:  # livsvm
+        _, X, y = load_data_livsvm(apikey, db, query)
+    else:
+        _, X, y = load_data(apikey, db, query)
 
     model_filename = model + '.pkl'
 
