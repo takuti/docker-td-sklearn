@@ -18,15 +18,14 @@ def main(apikey, db, table, feature, limit, model):
     query = 'select %s from %s limit %d' % (cols, table, limit)
 
     if len(feature) == 1:  # livsvm
-        _, X, y = load_data_livsvm(apikey, db, query)
+        X, y = load_data_livsvm(apikey, db, query)
     else:
-        _, X, y = load_data(apikey, db, query)
+        X, y = load_data(apikey, db, query)
 
     model_filename = model + '.pkl'
 
     # boto3 internally checks "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
     # http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables
-    boto3.setup_default_session(profile_name=os.environ['AWS_PROFILE'])
     s3 = boto3.resource('s3')
     with open(model_filename, 'w+b') as f:
         s3.Bucket(os.environ['AWS_BUCKET']).download_fileobj(model_filename, f)
