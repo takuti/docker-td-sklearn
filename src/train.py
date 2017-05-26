@@ -1,31 +1,29 @@
 import os
-import sys
-import json
 import pickle
 import boto3
+import click
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 
 from common import load_data
 
 
-def main():
-    # parse cli args
-    apikey = sys.argv[1]
-    db_name = sys.argv[2]
-    table_name = sys.argv[3]
-    params = json.loads(sys.argv[4])
+@click.command()
+@click.option('--apikey')
+@click.option('--db')
+@click.option('--table')
+@click.option('--feature', '-f', multiple=True)
+@click.option('--target')
+@click.option('--limit', default=10000, type=int)
+@click.option('--n_estimators', default=10)
+def main(apikey, db, table, feature, target, limit, n_estimators):
+    cols = ', '.join(feature) + ', ' + target
+    query = 'select %s from %s limit %d' % (cols, table, limit)
 
-    cols = ', '.join(params['features']) + ', ' + params['target']
-    query = 'select %s from %s' % (cols, table_name)
-    if 'limit' in params:
-        query += ' limit ' + str(params['limit'])
-
-    job_id, res = load_data(apikey, db_name, query)
+    job_id, res = load_data(apikey, db, query)
     mat = np.asarray(res)
     X, y = mat[:, :-1], mat[:, -1]
 
-    n_estimators = 10 if 'n_estimators' not in params else params['n_estimators']
     rf = RandomForestRegressor(n_estimators=n_estimators)
     rf.fit(X, y)
 

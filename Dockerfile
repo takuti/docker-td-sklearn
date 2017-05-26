@@ -4,7 +4,7 @@ WORKDIR /root/
 
 ENV REPO='https://github.com/takuti/docker-td-sklearn/archive/master.zip'
 
-RUN conda install -y scikit-learn boto3 && \
+RUN conda install -y scikit-learn boto3 click && \
     pip install td_client && \
     wget $REPO && \
     apt-get install unzip && unzip master.zip && \

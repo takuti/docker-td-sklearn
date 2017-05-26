@@ -1,29 +1,27 @@
 import os
-import sys
-import json
 import boto3
+import click
 import numpy as np
 from sklearn.externals import joblib
 
 from common import load_data
 
 
-def main():
-    # parse cli args
-    apikey = sys.argv[1]
-    db_name = sys.argv[2]
-    table_name = sys.argv[3]
-    params = json.loads(sys.argv[4])
+@click.command()
+@click.option('--apikey')
+@click.option('--db')
+@click.option('--table')
+@click.option('--feature', '-f', multiple=True)
+@click.option('--limit', default=10000, type=int)
+@click.option('--model', type=str)
+def main(apikey, db, table, feature, limit, model):
+    cols = ', '.join(feature)
+    query = 'select %s from %s limit %d' % (cols, table, limit)
 
-    cols = ', '.join(params['features'])
-    query = 'select %s from %s' % (cols, table_name)
-    if 'limit' in params:
-        query += ' limit ' + str(params['limit'])
-
-    _, res = load_data(apikey, db_name, query)
+    _, res = load_data(apikey, db, query)
     X = np.asarray(res)
 
-    model_filename = params['model_name'] + '.pkl'
+    model_filename = model + '.pkl'
 
     # boto3 internally checks "AWS_ACCESS_KEY_ID" and "AWS_SECRET_ACCESS_KEY"
     # http://boto3.readthedocs.io/en/latest/guide/configuration.html#environment-variables

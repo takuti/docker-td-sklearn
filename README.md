@@ -21,13 +21,12 @@ $ docker run \
 -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 -e AWS_PROFILE=${AWS_PROFILE} \
 -e AWS_BUCKET=${AWS_BUCKET} \
--it sklearn src/train.py $TD_API_KEY sample_datasets nasdaq \
-'{
-  "features": ["open", "volume", "low", "high"],
-  "target": "close",
-  "limit": 100,
-  "n_estimators": 16
-}'
+-it sklearn src/train.py \
+--apikey $TD_API_KEY --db sample_datasets --table nasdaq \
+-f open -f volume -f low -f high \
+--target close \
+--limit 100 \
+--n_estimators 16
 ```
 
 ### predict
@@ -38,10 +37,9 @@ $ docker run  \
 -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 -e AWS_PROFILE=${AWS_PROFILE} \
 -e AWS_BUCKET=${AWS_BUCKET} \
--it sklearn src/predict.py $TD_API_KEY sample_datasets nasdaq \
-'{
-  "features": ["open", "volume", "low", "high"],
-  "limit": 100,
-  "model_name": "145080752"
-}'
+-it sklearn src/predict.py \
+--apikey $TD_API_KEY --db sample_datasets --table nasdaq \
+-f open -f volume -f low -f high \
+--limit 100 \
+--model 145080752
 ```
