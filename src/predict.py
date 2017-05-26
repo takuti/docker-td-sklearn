@@ -1,6 +1,8 @@
 import os
+import time
 import boto3
 import click
+import tdclient
 from sklearn.externals import joblib
 
 from common import load_data, load_data_livsvm
@@ -32,8 +34,19 @@ def main(apikey, db, table, feature, limit, model):
         rf = joblib.load(f)
     os.remove(model_filename)
 
-    rf.predict(X)
-    print(rf.predict(X))
+    y = rf.predict(X)
+
+    with open('tmp.csv', 'w') as f:
+        f.write('time,predict\n')
+        t = int(time.time())
+        for yi in y:
+            f.write('%d,%f\n' % (t, yi))
+
+    with tdclient.Client(apikey) as td:
+        td.import_file(db, table + '_predict', 'csv', 'tmp.csv')
+
+    os.remove('tmp.csv')
+    print(y)
 
 
 if __name__ == '__main__':
