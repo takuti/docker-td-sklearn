@@ -10,25 +10,13 @@ from sklearn.datasets import load_svmlight_file
 from sklearn.externals import joblib
 
 
-def load_data(apikey, db_name, query):
-    res = []
+def load_data(apikey, db_name, query, is_libsvm=False):
+    td = tdclient.Client(apikey=apikey)
 
-    with tdclient.Client(apikey) as td:
-        job = td.query(db_name, query, type='presto')
-        job.wait()
-        for row in job.result():
-            res.append(row)
+    job = td.query(db_name, query, type='presto')
+    job.wait()
 
-    mat = np.asarray(res)
-    X, y = mat[:, :-1], mat[:, -1]
-
-    return X, y
-
-
-def load_data_livsvm(apikey, db_name, query):
-    with tdclient.Client(apikey) as td:
-        job = td.query(db_name, query, type='presto')
-        job.wait()
+    if is_libsvm:
         f = open('tmp.dat', 'w')
         for row in job.result():
             if len(row) == 1:  # for target-less prediction
@@ -38,11 +26,15 @@ def load_data_livsvm(apikey, db_name, query):
             if type(feature) is not list:
                 continue
             print(str(target) + ' ' + ' '.join(feature), file=f)
-
-    X, y = load_svmlight_file('tmp.dat')
-
-    os.remove('tmp.dat')
-    f.close()
+        X, y = load_svmlight_file('tmp.dat')
+        os.remove('tmp.dat')
+        f.close()
+    else:
+        res = []
+        for row in job.result():
+            res.append(row)
+        mat = np.asarray(res)
+        X, y = mat[:, :-1], mat[:, -1]
 
     return X, y
 
@@ -51,10 +43,8 @@ def train(opts):
     cols = ', '.join(opts.feature) + ', ' + opts.target
     query = 'select %s from %s limit %d' % (cols, opts.table, opts.limit)
 
-    if len(opts.feature) == 1:  # livsvm
-        X, y = load_data_livsvm(opts.apikey, opts.db, query)
-    else:
-        X, y = load_data(opts.apikey, opts.db, query)
+    is_libsvm = len(opts.feature) == 1
+    X, y = load_data(opts.apikey, opts.db, query, is_libsvm)
 
     rf = RandomForestRegressor(n_estimators=opts.n_estimators)
     rf.fit(X, y)
@@ -72,10 +62,8 @@ def predict(opts):
     cols = ', '.join(opts.feature)
     query = 'select %s from %s limit %d' % (cols, opts.table, opts.limit)
 
-    if len(opts.feature) == 1:  # livsvm
-        X, y = load_data_livsvm(opts.apikey, opts.db, query)
-    else:
-        X, y = load_data(opts.apikey, opts.db, query)
+    is_libsvm = len(opts.feature) == 1
+    X, y = load_data(opts.apikey, opts.db, query, is_libsvm)
 
     model_filename = opts.model + '.pkl'
 
