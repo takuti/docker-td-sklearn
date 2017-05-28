@@ -4,7 +4,7 @@ import time
 import boto3
 import tdclient
 import numpy as np
-from optparse import OptionParser
+from optparse import OptionParser, OptionGroup
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.datasets import load_svmlight_file
 from sklearn.externals import joblib
@@ -103,15 +103,26 @@ def predict(opts):
 
 
 def cli():
-    parser = OptionParser()
-    parser.add_option('--apikey')
-    parser.add_option('--db')
-    parser.add_option('--table')
-    parser.add_option('--target')
-    parser.add_option('--model')
-    parser.add_option('-f', '--feature', action='append')
-    parser.add_option('--limit', type='int', default=10000)
-    parser.add_option('--n_estimators', type='int', default=10)
+    parser = OptionParser(usage='usage: %prog [options] train/predict')
+    parser.add_option('--apikey',
+                      help='Treasure Data API key')
+    parser.add_option('--db',
+                      help='Source database name')
+    parser.add_option('--table',
+                      help='Source table name (and destination for prediction)')
+    parser.add_option('-f', '--feature', action='append',
+                      help='Column names used as features')
+    parser.add_option('--limit', type='int', default=10000,
+                      help='Number of rows used for training/prediction')
+    parser.add_option('--model',
+                      help='Model name stored as a .pkl file')
+
+    group = OptionGroup(parser, 'Options for training')
+    group.add_option('--target',
+                     help='Column name used as a response variable')
+    group.add_option('--n_estimators', type='int', default=10,
+                     help='Number of estimators for RandomForestRegressor')
+    parser.add_option_group(group)
 
     opts, args = parser.parse_args()
     print(opts)
