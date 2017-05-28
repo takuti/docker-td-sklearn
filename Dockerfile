@@ -5,6 +5,6 @@ WORKDIR /root/
 RUN conda install -y scikit-learn boto3 && \
     pip install td_client
 
-ADD . .
+ADD sklearn_cli.py .
 
 CMD ["/bin/sh"]
